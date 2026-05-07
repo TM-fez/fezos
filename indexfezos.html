@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FezOS — Fez Education</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#0F6E56;--green-dark:#085041;--green-light:#E1F5EE;--green-text:#085041;
+    --amber:#BA7517;--amber-light:#FAEEDA;--amber-text:#854F0B;
+    --blue:#185FA5;--blue-light:#E6F1FB;--blue-text:#0C447C;
+    --purple:#534AB7;--purple-light:#EEEDFE;--purple-text:#3C3489;
+    --red:#A32D2D;--red-light:#FCEBEB;
+    --gray:#5F5E5A;--gray-light:#F1EFE8;
+    --bg:#ffffff;--bg2:#F7F7F5;--bg3:#F0EEE9;
+    --text:#1a1a18;--text2:#5F5E5A;--text3:#888780;
+    --border:#e0ded8;--radius:8px;--radius-lg:12px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+  .app{display:flex;height:100vh;overflow:hidden}
+  /* Sidebar */
+  .sidebar{width:220px;background:var(--bg);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+  .logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+  .logo-name{font-size:18px;font-weight:600;color:var(--green);letter-spacing:-0.3px}
+  .logo-sub{font-size:11px;color:var(--text3);margin-top:3px}
+  .nav{padding:10px 0;flex:1}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:13.5px;color:var(--text2);border-left:2px solid transparent;transition:all 0.12s;user-select:none}
+  .nav-item:hover{background:var(--bg2);color:var(--text)}
+  .nav-item.active{background:#F0FAF7;color:var(--green);border-left-color:var(--green);font-weight:500}
+  .nav-icon{font-size:15px;width:18px;text-align:center}
+  .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg2)}
+  .header{padding:16px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .header-left .title{font-size:17px;font-weight:600;color:var(--text)}
+  .header-left .sub{font-size:12px;color:var(--text3);margin-top:2px}
+  .content{flex:1;overflow-y:auto;padding:20px 24px}
+  /* KPI */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .kpi{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+  .kpi-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px}
+  .kpi-value{font-size:24px;font-weight:600;color:var(--text)}
+  .kpi-sub{font-size:11px;color:var(--text3);margin-top:4px}
+  /* Summary grid */
+  .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .sum-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+  .sum-title{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px}
+  .stage-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px}
+  .stage-label{width:110px;color:var(--text2)}
+  .stage-bar-bg{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+  .stage-bar-fill{height:100%;border-radius:3px;transition:width 0.4s}
+  .stage-count{width:18px;text-align:right;color:var(--text3)}
+  .recent-row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--border)}
+  .recent-row:last-child{border-bottom:none}
+  /* Toolbar */
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .search{flex:1;height:34px;font-size:13px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none}
+  .search:focus{border-color:var(--green)}
+  /* Buttons */
+  .btn-primary{height:34px;padding:0 16px;font-size:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-weight:500}
+  .btn-primary:hover{background:var(--green-dark)}
+  .btn-sm{height:28px;padding:0 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--bg);color:var(--text2)}
+  .btn-sm:hover{background:var(--bg2);color:var(--text)}
+  .btn-del{height:28px;padding:0 10px;font-size:12px;border:1px solid #F0997B;border-radius:6px;cursor:pointer;background:transparent;color:var(--red)}
+  .btn-del:hover{background:var(--red-light)}
+  .btn-cancel{height:34px;padding:0 14px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:transparent;color:var(--text2)}
+  /* Table */
+  .table-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
+  td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#FAFAF8}
+  .act{display:flex;gap:5px}
+  /* Badges */
+  .badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap}
+  .b-won,.b-paid,.b-completed{background:var(--green-light);color:var(--green-text)}
+  .b-lead,.b-pending,.b-amber{background:var(--amber-light);color:var(--amber-text)}
+  .b-sent,.b-scheduled,.b-contacted{background:var(--blue-light);color:var(--blue-text)}
+  .b-negotiating{background:#FBEAF0;color:#993556}
+  .b-lost,.b-cancelled,.b-gray{background:var(--gray-light);color:var(--gray)}
+  .b-overdue{background:var(--red-light);color:var(--red)}
+  .b-review,.b-submitted,.b-accepted{background:var(--purple-light);color:var(--purple-text)}
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:200}
+  .modal{background:var(--bg);border-radius:var(--radius-lg);padding:22px;width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15)}
+  .modal-title{font-size:16px;font-weight:600;margin-bottom:18px;color:var(--text)}
+  .fr{margin-bottom:13px}
+  .fl{font-size:12px;color:var(--text2);margin-bottom:5px;display:block;font-weight:500}
+  .fi,.fs,.ft{width:100%;font-size:13px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none}
+  .fi,.fs{height:36px;padding:0 11px}
+  .ft{padding:9px 11px;resize:vertical;min-height:68px}
+  .fi:focus,.fs:focus,.ft:focus{border-color:var(--green)}
+  .mf{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+  /* AI */
+  .ai-fab{position:fixed;bottom:24px;right:24px;width:46px;height:46px;background:var(--green);border:none;border-radius:50%;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(15,110,86,0.35);z-index:150}
+  .ai-fab:hover{background:var(--green-dark)}
+  .ai-panel{position:fixed;bottom:78px;right:24px;width:320px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;flex-direction:column;box-shadow:0 8px 28px rgba(0,0,0,0.12);z-index:150}
+  .ai-hdr{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+  .ai-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;height:200px}
+  .msg{font-size:13px;line-height:1.5;padding:9px 12px;border-radius:var(--radius);max-width:260px}
+  .msg.user{background:var(--bg2);color:var(--text);align-self:flex-end;border:1px solid var(--border)}
+  .msg.assistant{background:var(--green-light);color:var(--green-text);align-self:flex-start}
+  .ai-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px}
+  .ai-inp{flex:1;height:34px;font-size:13px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none}
+  .ai-inp:focus{border-color:var(--green)}
+  .btn-send{height:34px;padding:0 14px;font-size:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-weight:500}
+  .btn-send:hover{background:var(--green-dark)}
+  /* Empty */
+  .empty{text-align:center;padding:48px;color:var(--text3);font-size:13px}
+  /* Responsive */
+  @media(max-width:768px){
+    .kpi-grid{grid-template-columns:1fr 1fr}
+    .sum-grid{grid-template-columns:1fr}
+    .sidebar{width:180px}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-name">FezOS</div>
+      <div class="logo-sub">Fez Education · BQA #0000947</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-footer">fezeducation.co.bw</div>
+  </div>
+  <div class="main">
+    <div class="header">
+      <div class="header-left">
+        <div class="title" id="ht">Dashboard</div>
+        <div class="sub" id="hs">Overview of your business</div>
+      </div>
+      <div id="ha"></div>
+    </div>
+    <div class="content" id="hc"></div>
+  </div>
+</div>
+
+<!-- AI -->
+<button class="ai-fab" onclick="toggleAI()" title="AI Assistant">✦</button>
+<div class="ai-panel" id="ai-panel" style="display:none">
+  <div class="ai-hdr">✦ AI Assistant</div>
+  <div class="ai-msgs" id="ai-msgs"></div>
+  <div class="ai-row">
+    <input class="ai-inp" id="ai-inp" placeholder="Ask about your data..." onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="btn-send" id="ai-send" onclick="sendAI()">→</button>
+  </div>
+</div>
+
+<script>
+const DD={
+  pipeline:[
+    {id:1,client:"EAM",contact:"",value:180000,stage:"Won",next:"Annual renewal Q3",industry:"FMCG",notes:"Top client"},
+    {id:2,client:"REDFOX",contact:"",value:95000,stage:"Won",next:"Propose new module",industry:"Retail",notes:""},
+    {id:3,client:"LACTALIS Gaborone",contact:"",value:60000,stage:"Lead",next:"Follow up call",industry:"FMCG",notes:"3 locations"},
+    {id:4,client:"LACTALIS Francistown",contact:"",value:60000,stage:"Lead",next:"Follow up call",industry:"FMCG",notes:""},
+    {id:5,client:"LACTALIS Maun",contact:"",value:60000,stage:"Lead",next:"Follow up call",industry:"FMCG",notes:""},
+    {id:6,client:"Lifestyle Properties",contact:"fahad@lifestyleproperties.co.bw",value:35000,stage:"Proposal Sent",next:"Awaiting response",industry:"Real Estate",notes:"Seele contract sent"}
+  ],
+  training:[
+    {id:1,client:"EAM",course:"Leadership Excellence",date:"2025-01-20",participants:25,status:"Completed",cert:"Yes",notes:""},
+    {id:2,client:"EAM",course:"Professional Etiquette",date:"2025-03-15",participants:18,status:"Completed",cert:"Yes",notes:""},
+    {id:3,client:"REDFOX",course:"Business Communication",date:"2025-02-10",participants:22,status:"Completed",cert:"Yes",notes:""},
+    {id:4,client:"LACTALIS Gaborone",course:"Leadership Excellence",date:"2025-06-15",participants:20,status:"Scheduled",cert:"No",notes:"HRDC funded — ETP500"}
+  ],
+  invoices:[
+    {id:1,client:"EAM",invoiceNo:"FEZ-INV-001",amount:45000,issued:"2025-01-25",due:"2025-02-25",status:"Paid",notes:""},
+    {id:2,client:"EAM",invoiceNo:"FEZ-INV-002",amount:45000,issued:"2025-03-20",due:"2025-04-20",status:"Paid",notes:""},
+    {id:3,client:"REDFOX",invoiceNo:"FEZ-INV-003",amount:32000,issued:"2025-02-15",due:"2025-03-15",status:"Paid",notes:""},
+    {id:4,client:"LACTALIS Gaborone",invoiceNo:"FEZ-INV-004",amount:20000,issued:"2025-05-01",due:"2025-05-31",status:"Pending",notes:"HRDC ETP500"}
+  ],
+  proposals:[
+    {id:1,client:"LACTALIS",title:"Leadership & Etiquette Programme",date:"2025-04-10",value:180000,status:"Under Review",notes:"3 locations x P60,000"},
+    {id:2,client:"Lifestyle Properties",title:"Seele Sales Training",date:"2025-05-04",value:35000,status:"Sent",notes:"Sales contract forwarded"},
+    {id:3,client:"HRDC",title:"ETP500 Course Accreditation x2",date:"2025-05-05",value:0,status:"Submitted",notes:"2 new courses pending accreditation"}
+  ]
+};
+
+const TABS=[
+  {id:"dashboard",label:"Dashboard",icon:"▦"},
+  {id:"pipeline",label:"Pipeline",icon:"◈"},
+  {id:"training",label:"Training",icon:"◎"},
+  {id:"invoices",label:"Invoices",icon:"◐"},
+  {id:"proposals",label:"Proposals",icon:"◉"}
+];
+
+const FIELDS={
+  pipeline:[
+    {k:"client",l:"Client name",t:"text"},{k:"value",l:"Value (P)",t:"number"},
+    {k:"stage",l:"Stage",t:"sel",o:["Lead","Contacted","Proposal Sent","Negotiating","Won","Lost"]},
+    {k:"next",l:"Next action",t:"text"},{k:"industry",l:"Industry",t:"text"},
+    {k:"contact",l:"Contact email",t:"text"},{k:"notes",l:"Notes",t:"ta"}
+  ],
+  training:[
+    {k:"client",l:"Client",t:"text"},{k:"course",l:"Course name",t:"text"},
+    {k:"date",l:"Date",t:"date"},{k:"participants",l:"Participants",t:"number"},
+    {k:"status",l:"Status",t:"sel",o:["Scheduled","Completed","Cancelled"]},
+    {k:"cert",l:"Certificates",t:"sel",o:["Yes","No","Pending"]},{k:"notes",l:"Notes",t:"ta"}
+  ],
+  invoices:[
+    {k:"client",l:"Client",t:"text"},{k:"invoiceNo",l:"Invoice number",t:"text"},
+    {k:"amount",l:"Amount (P)",t:"number"},{k:"issued",l:"Issue date",t:"date"},
+    {k:"due",l:"Due date",t:"date"},
+    {k:"status",l:"Status",t:"sel",o:["Pending","Paid","Overdue"]},{k:"notes",l:"Notes",t:"ta"}
+  ],
+  proposals:[
+    {k:"client",l:"Client",t:"text"},{k:"title",l:"Proposal title",t:"text"},
+    {k:"date",l:"Date sent",t:"date"},{k:"value",l:"Value (P)",t:"number"},
+    {k:"status",l:"Status",t:"sel",o:["Sent","Under Review","Accepted","Rejected","Submitted"]},
+    {k:"notes",l:"Notes",t:"ta"}
+  ]
+};
+
+const BMAP={Won:"won",Lead:"lead","Proposal Sent":"sent",Negotiating:"negotiating",Lost:"lost",Contacted:"contacted",Paid:"paid",Pending:"pending",Overdue:"overdue",Completed:"completed",Scheduled:"scheduled","Under Review":"review",Sent:"sent",Submitted:"submitted",Cancelled:"cancelled",Accepted:"accepted"};
+
+let S={
+  tab:"dashboard",
+  data:null,
+  modal:null,
+  form:{},
+  search:{pipeline:"",training:"",invoices:"",proposals:""},
+  nid:{pipeline:50,training:50,invoices:50,proposals:50},
+  aiOpen:false,
+  aiMsgs:[{r:"assistant",t:"Hi! Ask me anything about your Fez Education data — pipeline values, pending invoices, upcoming training, anything."}],
+  aiLoading:false
+};
+
+const fmt=n=>"P"+Number(n||0).toLocaleString();
+const fd=d=>{if(!d)return"—";try{return new Date(d).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});}catch(e){return d;}};
+const bdg=v=>`<span class="badge b-${BMAP[v]||"gray"}">${v}</span>`;
+const esc=s=>String(s||"").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function loadData(){
+  try{const d=localStorage.getItem("fezos_v1");if(d)S.data=JSON.parse(d);}catch(e){}
+  if(!S.data)S.data=JSON.parse(JSON.stringify(DD));
+}
+function saveData(){
+  try{localStorage.setItem("fezos_v1",JSON.stringify(S.data));}catch(e){}
+}
+
+function render(){
+  renderNav();
+  renderTab();
+}
+
+function renderNav(){
+  document.getElementById("nav").innerHTML=TABS.map(t=>
+    `<div class="nav-item${S.tab===t.id?" active":""}" onclick="go('${t.id}')"><span class="nav-icon">${t.icon}</span>${t.label}</div>`
+  ).join("");
+}
+
+function go(id){S.tab=id;S.modal=null;render();}
+
+function renderTab(){
+  const subs={dashboard:"Overview of your business",pipeline:"Sales pipeline & client stages",training:"Training records & upcoming sessions",invoices:"Invoice tracking & payment status",proposals:"Proposals sent & status"};
+  const t=TABS.find(x=>x.id===S.tab);
+  document.getElementById("ht").textContent=t.label;
+  document.getElementById("hs").textContent=subs[S.tab];
+  document.getElementById("ha").innerHTML="";
+  const c=document.getElementById("hc");
+  const a=document.getElementById("ha");
+  if(S.tab==="dashboard")tabDash(c);
+  else if(S.tab==="pipeline")tabPipeline(c,a);
+  else if(S.tab==="training")tabTraining(c,a);
+  else if(S.tab==="invoices")tabInvoices(c,a);
+  else if(S.tab==="proposals")tabProposals(c,a);
+  if(S.modal)renderModal();
+}
+
+function tabDash(el){
+  const p=S.data.pipeline,inv=S.data.invoices,tr=S.data.training;
+  const totP=p.reduce((a,x)=>a+Number(x.value||0),0);
+  const won=p.filter(x=>x.stage==="Won").reduce((a,x)=>a+Number(x.value||0),0);
+  const totI=inv.reduce((a,x)=>a+Number(x.amount||0),0);
+  const pending=inv.filter(x=>x.status==="Pending").reduce((a,x)=>a+Number(x.amount||0),0);
+  const done=tr.filter(x=>x.status==="Completed").length;
+  const up=tr.filter(x=>x.status==="Scheduled").length;
+  const stages=["Lead","Contacted","Proposal Sent","Negotiating","Won","Lost"];
+  const sc={Lead:"#BA7517",Contacted:"#378ADD","Proposal Sent":"#7F77DD",Negotiating:"#D4537E",Won:"#1D9E75",Lost:"#888780"};
+  const urgentInv=inv.filter(x=>x.status==="Pending"||x.status==="Overdue");
+  const upcoming=tr.filter(x=>x.status==="Scheduled");
+  const leads=p.filter(x=>x.stage==="Lead");
+  el.innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Pipeline value</div><div class="kpi-value">${fmt(totP)}</div><div class="kpi-sub">${p.length} deals total</div></div>
+      <div class="kpi"><div class="kpi-label">Revenue won</div><div class="kpi-value">${fmt(won)}</div><div class="kpi-sub">${p.filter(x=>x.stage==="Won").length} clients closed</div></div>
+      <div class="kpi"><div class="kpi-label">Total invoiced</div><div class="kpi-value">${fmt(totI)}</div><div class="kpi-sub">${fmt(pending)} pending</div></div>
+      <div class="kpi"><div class="kpi-label">Sessions done</div><div class="kpi-value">${done}</div><div class="kpi-sub">${up} upcoming</div></div>
+    </div>
+    <div class="sum-grid">
+      <div class="sum-card">
+        <div class="sum-title">Pipeline by stage</div>
+        ${stages.map(s=>{const n=p.filter(x=>x.stage===s).length,pct=p.length?Math.round(n/p.length*100):0;return`<div class="stage-row"><span class="stage-label">${s}</span><div class="stage-bar-bg"><div class="stage-bar-fill" style="width:${pct}%;background:${sc[s]}"></div></div><span class="stage-count">${n}</span></div>`;}).join("")}
+      </div>
+      <div class="sum-card">
+        <div class="sum-title">Needs attention</div>
+        ${urgentInv.length?urgentInv.map(x=>`<div class="recent-row"><span>${esc(x.invoiceNo)} — ${esc(x.client)}</span>${bdg(x.status)}</div>`).join(""):""}
+        ${upcoming.length?upcoming.map(x=>`<div class="recent-row"><span>${esc(x.client)} — ${esc(x.course)}</span><span style="font-size:11px;color:var(--text3)">${fd(x.date)}</span></div>`).join(""):""}
+        ${leads.length?leads.slice(0,3).map(x=>`<div class="recent-row"><span>${esc(x.client)}</span>${bdg("Lead")}</div>`).join(""):""}
+        ${!urgentInv.length&&!upcoming.length&&!leads.length?`<div style="color:var(--text3);font-size:13px;padding:8px 0">All clear!</div>`:""}
+      </div>
+    </div>`;
+}
+
+function tabPipeline(el,act){
+  act.innerHTML=`<button class="btn-primary" onclick="openM('add','pipeline')">+ Add deal</button>`;
+  const q=S.search.pipeline.toLowerCase();
+  const rows=S.data.pipeline.filter(x=>!q||x.client.toLowerCase().includes(q)||x.stage.toLowerCase().includes(q));
+  el.innerHTML=`<div class="toolbar"><input class="search" placeholder="Search clients or stage..." value="${esc(S.search.pipeline)}" oninput="S.search.pipeline=this.value;renderTab()"></div>
+  <div class="table-wrap"><table><thead><tr><th>Client</th><th>Value</th><th>Stage</th><th>Next action</th><th>Industry</th><th></th></tr></thead>
+  <tbody>${rows.length?rows.map(x=>`<tr><td><strong>${esc(x.client)}</strong></td><td>${fmt(x.value)}</td><td>${bdg(x.stage)}</td><td style="color:var(--text2)">${esc(x.next)||"—"}</td><td style="color:var(--text3)">${esc(x.industry)||"—"}</td><td><div class="act"><button class="btn-sm" onclick="openM('edit','pipeline',${x.id})">Edit</button><button class="btn-del" onclick="del('pipeline',${x.id})">Del</button></div></td></tr>`).join(""):`<tr><td colspan="6"><div class="empty">No deals found</div></td></tr>`}</tbody></table></div>`;
+}
+
+function tabTraining(el,act){
+  act.innerHTML=`<button class="btn-primary" onclick="openM('add','training')">+ Add session</button>`;
+  const q=S.search.training.toLowerCase();
+  const rows=S.data.training.filter(x=>!q||x.client.toLowerCase().includes(q)||x.course.toLowerCase().includes(q));
+  el.innerHTML=`<div class="toolbar"><input class="search" placeholder="Search client or course..." value="${esc(S.search.training)}" oninput="S.search.training=this.value;renderTab()"></div>
+  <div class="table-wrap"><table><thead><tr><th>Client</th><th>Course</th><th>Date</th><th>Participants</th><th>Status</th><th>Cert</th><th></th></tr></thead>
+  <tbody>${rows.length?rows.map(x=>`<tr><td><strong>${esc(x.client)}</strong></td><td>${esc(x.course)}</td><td style="color:var(--text2)">${fd(x.date)}</td><td>${x.participants}</td><td>${bdg(x.status)}</td><td style="color:var(--text3)">${esc(x.cert)}</td><td><div class="act"><button class="btn-sm" onclick="openM('edit','training',${x.id})">Edit</button><button class="btn-del" onclick="del('training',${x.id})">Del</button></div></td></tr>`).join(""):`<tr><td colspan="7"><div class="empty">No training records found</div></td></tr>`}</tbody></table></div>`;
+}
+
+function tabInvoices(el,act){
+  act.innerHTML=`<button class="btn-primary" onclick="openM('add','invoices')">+ Add invoice</button>`;
+  const q=S.search.invoices.toLowerCase();
+  const rows=S.data.invoices.filter(x=>!q||x.client.toLowerCase().includes(q)||x.invoiceNo.toLowerCase().includes(q));
+  el.innerHTML=`<div class="toolbar"><input class="search" placeholder="Search client or invoice number..." value="${esc(S.search.invoices)}" oninput="S.search.invoices=this.value;renderTab()"></div>
+  <div class="table-wrap"><table><thead><tr><th>Invoice #</th><th>Client</th><th>Amount</th><th>Issued</th><th>Due</th><th>Status</th><th></th></tr></thead>
+  <tbody>${rows.length?rows.map(x=>`<tr><td><strong>${esc(x.invoiceNo)}</strong></td><td>${esc(x.client)}</td><td><strong>${fmt(x.amount)}</strong></td><td style="color:var(--text2)">${fd(x.issued)}</td><td style="color:var(--text2)">${fd(x.due)}</td><td>${bdg(x.status)}</td><td><div class="act"><button class="btn-sm" onclick="openM('edit','invoices',${x.id})">Edit</button><button class="btn-del" onclick="del('invoices',${x.id})">Del</button></div></td></tr>`).join(""):`<tr><td colspan="7"><div class="empty">No invoices found</div></td></tr>`}</tbody></table></div>`;
+}
+
+function tabProposals(el,act){
+  act.innerHTML=`<button class="btn-primary" onclick="openM('add','proposals')">+ Add proposal</button>`;
+  const q=S.search.proposals.toLowerCase();
+  const rows=S.data.proposals.filter(x=>!q||x.client.toLowerCase().includes(q)||x.title.toLowerCase().includes(q));
+  el.innerHTML=`<div class="toolbar"><input class="search" placeholder="Search client or title..." value="${esc(S.search.proposals)}" oninput="S.search.proposals=this.value;renderTab()"></div>
+  <div class="table-wrap"><table><thead><tr><th>Client</th><th>Title</th><th>Date</th><th>Value</th><th>Status</th><th></th></tr></thead>
+  <tbody>${rows.length?rows.map(x=>`<tr><td><strong>${esc(x.client)}</strong></td><td style="color:var(--text2)">${esc(x.title)}</td><td style="color:var(--text2)">${fd(x.date)}</td><td>${x.value>0?fmt(x.value):"—"}</td><td>${bdg(x.status)}</td><td><div class="act"><button class="btn-sm" onclick="openM('edit','proposals',${x.id})">Edit</button><button class="btn-del" onclick="del('proposals',${x.id})">Del</button></div></td></tr>`).join(""):`<tr><td colspan="6"><div class="empty">No proposals found</div></td></tr>`}</tbody></table></div>`;
+}
+
+// Modal
+function openM(type,mod,id){
+  S.modal={type,mod,id};S.form={};
+  if(type==="edit"&&id){const item=S.data[mod].find(x=>x.id===id);if(item)S.form=Object.assign({},item);}
+  renderModal();
+}
+
+function renderModal(){
+  document.getElementById("modal-container")?.remove();
+  if(!S.modal)return;
+  const {type,mod}=S.modal;
+  const fields=FIELDS[mod]||[];
+  const label=mod==="invoices"?"invoice":mod==="proposals"?"proposal":mod.slice(0,-1);
+  const div=document.createElement("div");
+  div.id="modal-container";div.className="modal-bg";
+  div.innerHTML=`<div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">${type==="add"?"Add new":"Edit"} ${label}</div>
+    ${fields.map(f=>`<div class="fr"><label class="fl">${f.l}</label>${
+      f.t==="sel"?`<select class="fs" onchange="S.form['${f.k}']=this.value">${f.o.map(o=>`<option value="${o}"${(S.form[f.k]||"")==o?" selected":""}>${o}</option>`).join("")}</select>`:
+      f.t==="ta"?`<textarea class="ft" oninput="S.form['${f.k}']=this.value">${esc(S.form[f.k]||"")}</textarea>`:
+      `<input class="fi" type="${f.t}" value="${esc(S.form[f.k]||"")}" oninput="S.form['${f.k}']=this.value">`
+    }</div>`).join("")}
+    <div class="mf"><button class="btn-cancel" onclick="closeM()">Cancel</button><button class="btn-primary" onclick="saveM()">Save</button></div>
+  </div>`;
+  div.addEventListener("click",closeM);
+  document.body.appendChild(div);
+}
+
+function closeM(){S.modal=null;document.getElementById("modal-container")?.remove();}
+
+function saveM(){
+  const {type,mod,id}=S.modal;
+  const nums=["value","amount","participants"];
+  if(type==="add"){
+    const item={id:S.nid[mod]++,...S.form};
+    nums.forEach(k=>{if(k in item)item[k]=Number(item[k])||0;});
+    S.data[mod].push(item);
+  }else{
+    const i=S.data[mod].findIndex(x=>x.id===id);
+    if(i>=0){Object.assign(S.data[mod][i],S.form);nums.forEach(k=>{if(k in S.data[mod][i])S.data[mod][i][k]=Number(S.data[mod][i][k])||0;});}
+  }
+  saveData();closeM();renderTab();
+}
+
+function del(mod,id){
+  if(!confirm("Delete this record? This cannot be undone."))return;
+  S.data[mod]=S.data[mod].filter(x=>x.id!==id);saveData();renderTab();
+}
+
+// AI
+function toggleAI(){
+  S.aiOpen=!S.aiOpen;
+  document.getElementById("ai-panel").style.display=S.aiOpen?"flex":"none";
+  if(S.aiOpen)renderAIMsgs();
+}
+
+function renderAIMsgs(){
+  const el=document.getElementById("ai-msgs");
+  el.innerHTML=S.aiMsgs.map(m=>`<div class="msg ${m.r}">${esc(m.t)}</div>`).join("");
+  el.scrollTop=el.scrollHeight;
+}
+
+async function sendAI(){
+  const inp=document.getElementById("ai-inp");
+  const q=inp.value.trim();if(!q||S.aiLoading)return;
+  S.aiMsgs.push({r:"user",t:q});inp.value="";S.aiLoading=true;
+  document.getElementById("ai-send").disabled=true;renderAIMsgs();
+  const sys=`You are the AI assistant inside FezOS, Fez Education's business management dashboard. The company is in Botswana, currency is Pula (P). Answer in 2-3 sentences max. Be direct and specific with numbers when relevant.\n\nData:\nPipeline: ${JSON.stringify(S.data.pipeline)}\nTraining: ${JSON.stringify(S.data.training)}\nInvoices: ${JSON.stringify(S.data.invoices)}\nProposals: ${JSON.stringify(S.data.proposals)}`;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,system:sys,messages:[{role:"user",content:q}]})});
+    const d=await res.json();
+    S.aiMsgs.push({r:"assistant",t:d.content?.[0]?.text||"No response received."});
+  }catch(e){
+    S.aiMsgs.push({r:"assistant",t:"Could not connect to AI. Check your internet connection and try again."});
+  }
+  S.aiLoading=false;document.getElementById("ai-send").disabled=false;renderAIMsgs();
+}
+
+loadData();render();
+</script>
+</body>
+</html>
